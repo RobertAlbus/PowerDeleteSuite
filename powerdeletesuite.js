@@ -876,6 +876,7 @@ var pd = {
       },
     },
     delete: function (item) {
+      var kind = item.kind == "t3" ? "post" : "comment";
       pd.ui.wait(PD_REQUEST_DELAY_MS, () => {
         if (pd.performActions) {
           $.ajax({
@@ -896,7 +897,7 @@ var pd = {
               pd.task.info.errors++;
               pd.ui.wait(PD_RETRY_DELAY_MS, () => {
                 pd.actions.children.handleSingle();
-              });
+              }, "retrying delete of " + kind);
             }
           );
         } else {
@@ -904,9 +905,10 @@ var pd = {
           pd.task.after = pd.task.items[0].data.name;
           pd.actions.children.handleSingle();
         }
-      });
+      }, "deleting " + kind);
     },
     edit: function (item) {
+      var kind = item.kind == "t3" ? "post" : "comment";
       pd.ui.wait(PD_REQUEST_DELAY_MS, () => {
         if (pd.performActions) {
           var editString = pd.task.config.editText ||
@@ -931,14 +933,14 @@ var pd = {
               pd.task.info.errors++;
               pd.ui.wait(PD_RETRY_DELAY_MS, () => {
                 pd.actions.children.handleSingle();
-              });
+              }, "retrying edit of " + kind);
             }
           );
         } else {
           pd.task.items[0].pdEdited = true;
           pd.actions.children.handleSingle();
         }
-      });
+      }, "editing " + kind);
     },
   },
   ui: {
@@ -1051,16 +1053,17 @@ var pd = {
       }
       return $el;
     },
-    wait: function (ms, callback) {
+    wait: function (ms, callback, opName) {
       var totalSeconds = Math.ceil(ms / 1000);
       var seconds = totalSeconds;
+      var op = opName || "next request";
       var $el = pd.ui.ensureWaitBar();
       var $bar = $el.find(".pd__wait-bar");
       var $label = $el.find(".pd__wait-label");
       var render = function () {
         var pct = ((totalSeconds - seconds) / totalSeconds) * 100;
         $bar.css("width", pct + "%");
-        $label.text("Waiting " + seconds + "s...");
+        $label.text("Waiting " + seconds + "s before " + op + "...");
       };
       render();
       var interval = setInterval(function () {
@@ -1068,7 +1071,7 @@ var pd = {
         if (seconds <= 0) {
           clearInterval(interval);
           $bar.css("width", "100%");
-          $label.text("Sending...");
+          $label.text("Sending: " + op + "...");
           callback();
         } else {
           render();
