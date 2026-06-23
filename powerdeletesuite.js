@@ -874,7 +874,7 @@ var pd = {
       },
     },
     delete: function (item) {
-      setTimeout(() => {
+      pd.ui.wait(5000, () => {
         if (pd.performActions) {
           $.ajax({
             url: "/api/del",
@@ -892,9 +892,9 @@ var pd = {
             },
             function () {
               pd.task.info.errors++;
-              setTimeout(() => {
+              pd.ui.wait(PD_RETRY_DELAY_MS, () => {
                 pd.actions.children.handleSingle();
-              }, PD_RETRY_DELAY_MS);
+              });
             }
           );
         } else {
@@ -902,10 +902,10 @@ var pd = {
           pd.task.after = pd.task.items[0].data.name;
           pd.actions.children.handleSingle();
         }
-      }, 5000);
+      });
     },
     edit: function (item) {
-      setTimeout(() => {
+      pd.ui.wait(5000, () => {
         if (pd.performActions) {
           var editString = pd.task.config.editText ||
             pd.editStrings[Math.floor(Math.random() * pd.editStrings.length)];
@@ -927,16 +927,16 @@ var pd = {
             },
             function () {
               pd.task.info.errors++;
-              setTimeout(() => {
+              pd.ui.wait(PD_RETRY_DELAY_MS, () => {
                 pd.actions.children.handleSingle();
-              }, PD_RETRY_DELAY_MS);
+              });
             }
           );
         } else {
           pd.task.items[0].pdEdited = true;
           pd.actions.children.handleSingle();
         }
-      }, 5000);
+      });
     },
   },
   ui: {
@@ -1028,6 +1028,28 @@ var pd = {
         pd.task.info.deleted +
         pd.task.info.donePages;
       document.title = pd.config.user + " | " + pd.task.info.ajaxCalls;
+    },
+    wait: function (ms, callback) {
+      var seconds = Math.ceil(ms / 1000);
+      var $el = $("#pd__wait");
+      if ($el.length === 0) {
+        $el = $("<div id='pd__wait' style='margin:8px 0;font-weight:bold;'></div>")
+          .insertAfter("#pd__central h2");
+      }
+      var render = function () {
+        $el.text("Waiting " + seconds + "s...").show();
+      };
+      render();
+      var interval = setInterval(function () {
+        seconds--;
+        if (seconds <= 0) {
+          clearInterval(interval);
+          $el.hide().text("");
+          callback();
+        } else {
+          render();
+        }
+      }, 1000);
     },
     done: function () {
       pd.ui.updateDisplay();
