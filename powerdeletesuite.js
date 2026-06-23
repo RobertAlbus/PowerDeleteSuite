@@ -1,4 +1,5 @@
 var PD_RETRY_DELAY_MS = 60000 * 5;
+var PD_SOURCE_URL = "https://github.com/RobertAlbus/PowerDeleteSuite";
 
 var pd = {
   version: "1.4.11",
@@ -955,6 +956,12 @@ var pd = {
             pd.task.paths.timeframes[0] +
             "</small>"
         );
+      if ($("#pd__source").length === 0) {
+        $("<div id='pd__source' style='margin:4px 0;font-size:0.9em;opacity:0.8;'>" +
+          "Source: <a href='" + PD_SOURCE_URL + "' target='_blank'>" + PD_SOURCE_URL + "</a>" +
+          "</div>").insertAfter("#pd__central h2");
+      }
+      pd.ui.ensureWaitBar();
       pd.task.info.numPages =
         pd.task.info.donePages +
         (pd.task.paths.sections.length - 1) * 4 +
@@ -1029,22 +1036,38 @@ var pd = {
         pd.task.info.donePages;
       document.title = pd.config.user + " | " + pd.task.info.ajaxCalls;
     },
-    wait: function (ms, callback) {
-      var seconds = Math.ceil(ms / 1000);
+    ensureWaitBar: function () {
       var $el = $("#pd__wait");
       if ($el.length === 0) {
-        $el = $("<div id='pd__wait' style='margin:8px 0;font-weight:bold;'></div>")
-          .insertAfter("#pd__central h2");
+        $el = $(
+          "<div id='pd__wait' style='margin:8px 0;'>" +
+            "<div class='pd__wait-label' style='font-size:0.9em;margin-bottom:2px;min-height:1em;'></div>" +
+            "<div class='pd__wait-track' style='width:100%;height:8px;background:#ddd;border-radius:4px;overflow:hidden;'>" +
+              "<div class='pd__wait-bar' style='width:0%;height:100%;background:#4a90e2;transition:width 1s linear;'></div>" +
+            "</div>" +
+          "</div>"
+        ).insertAfter("#pd__central h2");
       }
+      return $el;
+    },
+    wait: function (ms, callback) {
+      var totalSeconds = Math.ceil(ms / 1000);
+      var seconds = totalSeconds;
+      var $el = pd.ui.ensureWaitBar();
+      var $bar = $el.find(".pd__wait-bar");
+      var $label = $el.find(".pd__wait-label");
       var render = function () {
-        $el.text("Waiting " + seconds + "s...").show();
+        var pct = ((totalSeconds - seconds) / totalSeconds) * 100;
+        $bar.css("width", pct + "%");
+        $label.text("Waiting " + seconds + "s...");
       };
       render();
       var interval = setInterval(function () {
         seconds--;
         if (seconds <= 0) {
           clearInterval(interval);
-          $el.hide().text("");
+          $bar.css("width", "100%");
+          $label.text("");
           callback();
         } else {
           render();
