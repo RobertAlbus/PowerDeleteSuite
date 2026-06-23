@@ -1,3 +1,4 @@
+var PD_REQUEST_DELAY_MS = 10000;
 var PD_RETRY_DELAY_MS = 60000 * 5;
 var PD_SOURCE_URL = "https://github.com/RobertAlbus/PowerDeleteSuite";
 
@@ -875,7 +876,7 @@ var pd = {
       },
     },
     delete: function (item) {
-      pd.ui.wait(5000, () => {
+      pd.ui.wait(PD_REQUEST_DELAY_MS, () => {
         if (pd.performActions) {
           $.ajax({
             url: "/api/del",
@@ -906,7 +907,7 @@ var pd = {
       });
     },
     edit: function (item) {
-      pd.ui.wait(5000, () => {
+      pd.ui.wait(PD_REQUEST_DELAY_MS, () => {
         if (pd.performActions) {
           var editString = pd.task.config.editText ||
             pd.editStrings[Math.floor(Math.random() * pd.editStrings.length)];
