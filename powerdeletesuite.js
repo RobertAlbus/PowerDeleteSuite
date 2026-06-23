@@ -1,4 +1,4 @@
-var PD_REQUEST_DELAY_MS = 10000;
+var PD_REQUEST_DELAY_MS = 5000;
 var PD_RETRY_DELAY_MS = 60000 * 5;
 var PD_SOURCE_URL = "https://github.com/RobertAlbus/PowerDeleteSuite";
 
