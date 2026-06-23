@@ -1067,7 +1067,7 @@ var pd = {
         if (seconds <= 0) {
           clearInterval(interval);
           $bar.css("width", "100%");
-          $label.text("");
+          $label.text("Sending...");
           callback();
         } else {
           render();
