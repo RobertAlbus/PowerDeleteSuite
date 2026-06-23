@@ -1,3 +1,5 @@
+var PD_RETRY_DELAY_MS = 60000 * 5;
+
 var pd = {
   version: "1.4.11",
   bookmarkver: "1.4",
@@ -890,18 +892,9 @@ var pd = {
             },
             function () {
               pd.task.info.errors++;
-              if (
-                confirm(
-                  "Error deleting " +
-                    (item.kind == "t3" ? "post" : "comment") +
-                    ", would you like to retry?"
-                )
-              ) {
+              setTimeout(() => {
                 pd.actions.children.handleSingle();
-              } else {
-                pd.actions.children.finishItem();
-                pd.actions.children.handleGroup();
-              }
+              }, PD_RETRY_DELAY_MS);
             }
           );
         } else {
@@ -934,16 +927,9 @@ var pd = {
             },
             function () {
               pd.task.info.errors++;
-              if (
-                !confirm(
-                  "Error editing " +
-                    (item.kind == "t3" ? "post" : "comment") +
-                    ", would you like to retry?"
-                )
-              ) {
-                item.pdEdited = true;
-              }
-              pd.actions.children.handleSingle();
+              setTimeout(() => {
+                pd.actions.children.handleSingle();
+              }, PD_RETRY_DELAY_MS);
             }
           );
         } else {
